@@ -1,7 +1,5 @@
-use std::io::Write;
-
-use anyhow::Result;
 use clap::{command, Parser};
+use how::data::{sync_data, Searcher};
 
 #[derive(Parser, Debug)]
 #[command(name = "how")]
@@ -13,51 +11,30 @@ struct Cli {
     name: String,
 }
 
-const DATA_INDEX_URL: &str = "https://unpkg.com/linux-command/dist/data.json";
 const COMMAND_URL: &str = "https://unpkg.com/linux-command/command";
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = Cli::parse();
-    sync_data().await?;
+    let data = sync_data().await?;
+    match data.search(&args.name) {
+        Some(cmds) =>{
+            println!("您要找的是不是下面这些命令:");
+            println!();
+            for (cmd,desc) in cmds {
+                println!("{:15}: {}",cmd,desc);
+            }
+        }
+        None=>{
+            let url = format!("{}/{}.md", COMMAND_URL, args.name);
+            let text = reqwest::get(url).await?.text().await?;
+            let _mdtext = markdown::to_mdast(&text, &markdown::ParseOptions::default()).unwrap();
+            // dbg!(mdtext);
+            println!("{}", text);
+        }
+    }
 
-
-    let url = format!("{}/{}.md", COMMAND_URL, args.name);
-    let text = reqwest::get(url).await?.text().await?;
-    let _mdtext = markdown::to_mdast(&text, &markdown::ParseOptions::default()).unwrap();
-    // dbg!(mdtext);
-    println!("{}", text);
+    
     Ok(())
 }
 
 
-
-async fn sync_data() -> Result<()> {
-    let mut data_path = home::home_dir().unwrap_or("~".into());
-    data_path.push(".how/data.json");
-
-    match data_path.metadata() {
-        Ok(meta) => {
-            if !meta.is_file() {
-                eprintln!("{:?} 不是文件", data_path.as_path());
-            }
-            Ok(())
-        }
-        Err(_) => {
-            let res = reqwest::get(DATA_INDEX_URL)
-                .await
-                .unwrap()
-                .text()
-                .await
-                .unwrap();
-            let parent = data_path.parent().unwrap();
-            if !parent.exists() {
-                // println!("create dir: {:?}", &parent);
-                std::fs::create_dir(parent)?;
-            }
-
-            let mut file = std::fs::File::create(data_path)?;
-            file.write_all(res.as_bytes())?;
-            Ok(())
-        }
-    }
-}
