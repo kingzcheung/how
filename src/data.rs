@@ -74,3 +74,25 @@ impl Searcher for Data {
         }
     }
 }
+
+#[cfg(test)]
+mod test{
+    use crate::data::{DATA_INDEX_URL, Data, Searcher};
+
+
+    #[tokio::test]
+    async fn test_search(){
+        let json_data = reqwest::get(DATA_INDEX_URL).await.unwrap().text().await.unwrap();
+
+        let data:Data = serde_json::from_str(&json_data).unwrap();
+        let search_res = data.search("列表");
+        assert!(search_res.is_some());
+
+        let search_res = data.search("pwd");
+        assert!(search_res.is_none());
+
+        let search_res = data.search("感悟人生苦短");
+        assert!(search_res.is_some());
+        assert_eq!(search_res.unwrap().len(), 0);
+    }
+}

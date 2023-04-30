@@ -1,6 +1,6 @@
 # How
 
-在命令行中查询命令行怎么使用。资源来源于 [jaywcjlove/linux-command](https://github.com/jaywcjlove/linux-command) 项目的整理。
+`how`命令用于查询 `linux` 命令行如何使用。资源来源于 [jaywcjlove/linux-command](https://github.com/jaywcjlove/linux-command) 项目的整理。
 
 ## 安装
 
