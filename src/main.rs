@@ -1,6 +1,6 @@
 use clap::{command, Parser};
 use how::data::{sync_data, Searcher};
-
+use colored::*;
 #[derive(Parser, Debug)]
 #[command(name = "how")]
 #[command(author = "kingzcheung<kingzcheung@gmail.com>")]
@@ -18,11 +18,16 @@ async fn main() -> anyhow::Result<()> {
     let data = sync_data().await?;
     match data.search(&args.name) {
         Some(cmds) =>{
-            println!("您要找的是不是下面这些命令:");
-            println!();
-            for (cmd,desc) in cmds {
-                println!("{:15}: {}",cmd,desc);
+            if !cmds.is_empty() {
+                println!("您要找的是不是下面这些命令:");
+                println!();
+                for (cmd,desc) in cmds {
+                    println!("{:15}: {}",cmd,desc);
+                }
+            }else {
+                println!("{}","未找到相关的命令".red())
             }
+            
         }
         None=>{
             let url = format!("{}/{}.md", COMMAND_URL, args.name);
