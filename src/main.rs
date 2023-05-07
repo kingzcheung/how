@@ -1,5 +1,5 @@
 use clap::{command, Parser};
-use how::data::{sync_data, Searcher};
+use how::{data::{sync_data, Searcher}, text::CompileText};
 use colored::*;
 #[derive(Parser, Debug)]
 #[command(name = "how")]
@@ -27,13 +27,14 @@ async fn main() -> anyhow::Result<()> {
             }else {
                 println!("{}","未找到相关的命令".red())
             }
-            
+             
         }
         None=>{
             let url = format!("{}/{}.md", COMMAND_URL, args.name);
             let text = reqwest::get(url).await?.text().await?;
-            let _mdtext = markdown::to_mdast(&text, &markdown::ParseOptions::default()).unwrap();
+            let mdtext = markdown::to_mdast(&text, &markdown::ParseOptions::default()).unwrap();
             // dbg!(mdtext);
+            let text = mdtext.to_text().join("");
             println!("{}", text);
         }
     }

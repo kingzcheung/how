@@ -66,7 +66,7 @@ fn enter_text(text: &Text) -> PlainText {
 }
 
 fn enter_code(code: &Code) ->PlainText {
-    let c = code.value.clone().dimmed().to_string();
+    let c = code.value.clone().truecolor(0, 255, 136).to_string();
     vec!["\n\n".into(),c,"\n\n".into()]
 }
 
